@@ -60,7 +60,7 @@ jobs:
             echo "Fetching tfvars for DEV environment"
             az keyvault secret show \
               --vault-name ${{ env.KEYVAULT_NAME }} \
-              --name "dev-tfvars" \
+              --name "dev-tfvars-oblig2" \
               --query value -o tsv > ${{ env.WORKDIR }}/terraform/dev.tfvars
             echo "✅ Saved dev.tfvars from Key Vault"
 
@@ -135,7 +135,7 @@ jobs:
             echo "Fetching tfvars for TEST environment"
             az keyvault secret show \
               --vault-name ${{ env.KEYVAULT_NAME }} \
-              --name "test-tfvars" \
+              --name "test-tfvars-oblig2" \
               --query value -o tsv > ${{ env.WORKDIR }}/terraform/test.tfvars
             echo "✅ Saved test.tfvars from Key Vault"
 
@@ -210,7 +210,7 @@ jobs:
             echo "Fetching tfvars for PROD environment"
             az keyvault secret show \
               --vault-name ${{ env.KEYVAULT_NAME }} \
-              --name "prod-tfvars" \
+              --name "prod-tfvars-oblig2" \
               --query value -o tsv > ${{ env.WORKDIR }}/terraform/prod.tfvars
             echo "✅ Saved prod.tfvars from Key Vault"
 

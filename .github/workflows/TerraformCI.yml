@@ -113,7 +113,7 @@ jobs:
             echo "Fetching tfvars for ${{ matrix.environment }} environment"
             az keyvault secret show \
               --vault-name ${{ env.KEYVAULT_NAME }} \
-              --name "${{ matrix.environment }}-tfvars" \
+              --name "${{ matrix.environment }}-tfvars-oblig2" \
               --query value -o tsv > ${{ env.WORKDIR }}/${{ matrix.environment }}.tfvars
             echo "✅ Saved ${{ matrix.environment }}.tfvars from Key Vault"
 
