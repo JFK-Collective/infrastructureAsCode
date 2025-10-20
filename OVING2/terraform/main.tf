@@ -11,7 +11,7 @@ resource "azurerm_resource_group" "main" {
   }
 }
 
-# Storage Account #
+# Storage Account ##
 resource "azurerm_storage_account" "main" {
   name                = "st${var.project_name}${var.environment}${var.prefix}"
   resource_group_name = azurerm_resource_group.main.name
