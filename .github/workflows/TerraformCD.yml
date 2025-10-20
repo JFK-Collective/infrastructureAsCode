@@ -17,31 +17,31 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev
     env:
-      WORKDIR: "OVING2/environments"
+      WORKDIR: "OVING2"
       BACKEND_HCL: "OVING2/shared/backend.hcl"
       TF_INPUT: "false"
       TF_IN_AUTOMATION: "true"
       ENVIRONMENT: "dev"
       LOCATION: "westeurope"
       PROJECT_NAME: "OBLIG2"
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.13.3
           terraform_wrapper: false
-      
+
       - name: Azure Login (OIDC)
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      
+
       - name: Export ARM_* for Terraform (OIDC)
         run: |
           {
@@ -50,27 +50,25 @@ jobs:
             echo "ARM_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}"
             echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}"
           } >> "$GITHUB_ENV"
-      
+
       - name: Terraform Init
-        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
+        working-directory: ${{ env.WORKDIR }}/terraform
         run: |
           terraform init \
             -backend-config="${{ github.workspace }}/${{ env.BACKEND_HCL }}" \
             -backend-config="key=projects/storageaccount/${{ env.ENVIRONMENT }}/${{ env.ENVIRONMENT }}.tfstate" \
             -input=false \
             -no-color
-      
+
       - name: Terraform Apply
-        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
+        working-directory: ${{ env.WORKDIR }}/terraform
         run: |
           terraform apply -auto-approve \
-            -var="environment=${{ env.ENVIRONMENT }}" \
-            -var="location=${{ env.LOCATION }}" \
-            -var="project_name=${{ env.PROJECT_NAME }}" \
+            -var-file="${{ matrix.environment }}.tfvars" \
             -no-color
-      
+
       - name: Terraform Output
-        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
+        working-directory: ${{ env.WORKDIR }}/terraform
         id: output
         run: |
           echo "### Terraform Outputs for DEV" >> $GITHUB_STEP_SUMMARY
@@ -82,31 +80,31 @@ jobs:
     needs: deploy-dev
     environment: test
     env:
-      WORKDIR: "OVING2/environments"
+      WORKDIR: "OVING2/terraform"
       BACKEND_HCL: "OVING2/shared/backend.hcl"
       TF_INPUT: "false"
       TF_IN_AUTOMATION: "true"
       ENVIRONMENT: "test"
       LOCATION: "westeurope"
       PROJECT_NAME: "OBLIG2"
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.13.3
           terraform_wrapper: false
-      
+
       - name: Azure Login (OIDC)
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      
+
       - name: Export ARM_* for Terraform (OIDC)
         run: |
           {
@@ -115,27 +113,25 @@ jobs:
             echo "ARM_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}"
             echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}"
           } >> "$GITHUB_ENV"
-      
+
       - name: Terraform Init
-        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
+        working-directory: ${{ env.WORKDIR }}/terraform
         run: |
           terraform init \
             -backend-config="${{ github.workspace }}/${{ env.BACKEND_HCL }}" \
             -backend-config="key=projects/storageaccount/${{ env.ENVIRONMENT }}/${{ env.ENVIRONMENT }}.tfstate" \
             -input=false \
             -no-color
-      
+
       - name: Terraform Apply
-        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
+        working-directory: ${{ env.WORKDIR }}/terraform
         run: |
           terraform apply -auto-approve \
-            -var="environment=${{ env.ENVIRONMENT }}" \
-            -var="location=${{ env.LOCATION }}" \
-            -var="project_name=${{ env.PROJECT_NAME }}" \
+            -var-file="${{ matrix.environment }}.tfvars" \
             -no-color
-      
+
       - name: Terraform Output
-        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
+        working-directory: ${{ env.WORKDIR }}/terraform
         id: output
         run: |
           echo "### Terraform Outputs for TEST" >> $GITHUB_STEP_SUMMARY
@@ -147,31 +143,31 @@ jobs:
     needs: deploy-test
     environment: prod
     env:
-      WORKDIR: "OVING2/environments"
+      WORKDIR: "OVING2/terraform"
       BACKEND_HCL: "OVING2/shared/backend.hcl"
       TF_INPUT: "false"
       TF_IN_AUTOMATION: "true"
       ENVIRONMENT: "prod"
       LOCATION: "westeurope"
       PROJECT_NAME: "OBLIG2"
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.13.3
           terraform_wrapper: false
-      
+
       - name: Azure Login (OIDC)
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      
+
       - name: Export ARM_* for Terraform (OIDC)
         run: |
           {
@@ -180,32 +176,30 @@ jobs:
             echo "ARM_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}"
             echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}"
           } >> "$GITHUB_ENV"
-      
+
       - name: Terraform Init
-        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
+        working-directory: ${{ env.WORKDIR }}/terraform
         run: |
           terraform init \
             -backend-config="${{ github.workspace }}/${{ env.BACKEND_HCL }}" \
             -backend-config="key=projects/storageaccount/${{ env.ENVIRONMENT }}/${{ env.ENVIRONMENT }}.tfstate" \
             -input=false \
             -no-color
-      
+
       - name: Terraform Apply
-        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
+        working-directory: ${{ env.WORKDIR }}/terraform
         run: |
           terraform apply -auto-approve \
-            -var="environment=${{ env.ENVIRONMENT }}" \
-            -var="location=${{ env.LOCATION }}" \
-            -var="project_name=${{ env.PROJECT_NAME }}" \
+            -var-file="${{ matrix.environment }}.tfvars" \
             -no-color
-      
+
       - name: Terraform Output
-        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
+        working-directory: ${{ env.WORKDIR }}/terraform
         id: output
         run: |
           echo "### Terraform Outputs for PROD" >> $GITHUB_STEP_SUMMARY
           terraform output -no-color | tee -a $GITHUB_STEP_SUMMARY
-      
+
       - name: Deployment Summary
         run: |
           echo "## 🎉 Deployment Complete!" >> $GITHUB_STEP_SUMMARY

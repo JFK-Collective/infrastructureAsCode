@@ -1,0 +1,37 @@
+# Resource Group
+resource "azurerm_resource_group" "main" {
+  name     = "rg-${var.project_name}-${var.environment}"
+  location = var.location
+
+  tags = {
+    Environment = var.environment
+    ManagedBy   = "jorgefk"
+    Project     = var.project_name
+    costcode    = "12345a213414dfg"
+  }
+}
+
+# Storage Account
+resource "azurerm_storage_account" "main" {
+  name                = "st${var.project_name}${var.environment}${var.prefix}"
+  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.main.location
+
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+
+  min_tls_version = "TLS1_2"
+
+  tags = {
+    Environment = var.environment
+    ManagedBy   = "Terraform"
+    Test        = "TestValue"
+  }
+}
+
+# Storage Container
+resource "azurerm_storage_container" "oblig" {
+  name                  = "oblig-data"
+  storage_account_id    = azurerm_storage_account.main.id
+  container_access_type = "private"
+}

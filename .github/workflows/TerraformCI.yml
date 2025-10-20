@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev
     env:
-      WORKDIR: "OVING/environments"
+      WORKDIR: "OVING"
       BACKEND_HCL: "OVING2/shared/backend.hcl"
       TF_INPUT: "false"
       TF_IN_AUTOMATION: "true"
@@ -119,26 +119,6 @@ jobs:
             -input=false \
             -no-color
 
-      - name: Set Environment Variables
-        run: |
-          case "${{ matrix.environment }}" in
-            dev)
-              echo "ENVIRONMENT=dev" >> $GITHUB_ENV
-              echo "LOCATION=westeurope" >> $GITHUB_ENV
-              echo "PROJECT_NAME=demo" >> $GITHUB_ENV
-              ;;
-            test)
-              echo "ENVIRONMENT=test" >> $GITHUB_ENV
-              echo "LOCATION=westeurope" >> $GITHUB_ENV
-              echo "PROJECT_NAME=demo" >> $GITHUB_ENV
-              ;;
-            prod)
-              echo "ENVIRONMENT=prod" >> $GITHUB_ENV
-              echo "LOCATION=westeurope" >> $GITHUB_ENV
-              echo "PROJECT_NAME=demo" >> $GITHUB_ENV
-              ;;
-          esac
-
       - name: Terraform Plan
         working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
         id: plan
@@ -146,9 +126,7 @@ jobs:
           # Kjør plan og fang både stdout og stderr
           set +e  # Ikke stopp ved feil
           terraform plan -no-color \
-            -var="environment=${{ env.ENVIRONMENT }}" \
-            -var="location=${{ env.LOCATION }}" \
-            -var="project_name=${{ env.PROJECT_NAME }}" \
+            -var-file="${{ matrix.environment }}.tfvars" \
             -out=${{ matrix.environment }}.tfplan 2>&1 | tee plan-output.txt
 
           PLAN_EXIT_CODE=${PIPESTATUS[0]}
