@@ -107,15 +107,15 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Fetch tfvars from Azure Key Vault
-        uses: azure/CLI@v1
-        with:
-          inlineScript: |
-            echo "Fetching tfvars for ${{ matrix.environment }} environment"
-            az keyvault secret show \
-              --vault-name ${{ env.KEYVAULT_NAME }} \
-              --name "${{ matrix.environment }}-tfvars-oblig2" \
-              --query value -o tsv > ${{ env.WORKDIR }}/${{ matrix.environment }}.tfvars
-            echo "✅ Saved ${{ matrix.environment }}.tfvars from Key Vault"
+        run: |
+          echo "Fetching tfvars for ${{ matrix.environment }}..."
+          mkdir -p ${{ env.WORKDIR }}
+          SECRET_VALUE=$(az keyvault secret show \
+            --vault-name ${{ env.KEYVAULT_NAME }} \
+            --name "${{ matrix.environment }}-tfvars-oblig2" \
+            --query value -o tsv)
+          echo "$SECRET_VALUE" > "${{ env.WORKDIR }}/${{ matrix.environment }}.tfvars"
+          echo "✅ Saved ${{ matrix.environment }}.tfvars"
 
       - name: Terraform Init
         working-directory: ${{ env.WORKDIR }}
@@ -133,7 +133,7 @@ jobs:
           set +e
           terraform plan -no-color \
             -var-file="${{ matrix.environment }}.tfvars" \
-            -out=${{ matrix.environment }}.tfplan 2>&1 | tee plan-output.txt
+            -out="${{ matrix.environment }}.tfplan" 2>&1 | tee plan-output.txt
           PLAN_EXIT_CODE=${PIPESTATUS[0]}
           set -e
 
@@ -143,7 +143,6 @@ jobs:
             cat plan-output.txt
             echo 'EOF'
           } >> "$GITHUB_ENV"
-
           exit ${PLAN_EXIT_CODE}
         continue-on-error: true
 
