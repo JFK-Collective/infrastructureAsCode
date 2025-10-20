@@ -18,7 +18,7 @@ jobs:
     environment: dev
     env:
       WORKDIR: "OVING2/terraform"
-      BACKEND_HCL: "OVING2/shared/backend.hcl"
+      BACKEND_HCL: "../shared/backend.hcl"
       TF_INPUT: "false"
       TF_IN_AUTOMATION: "true"
       ENVIRONMENT: "dev"
@@ -87,7 +87,7 @@ jobs:
     environment: test
     env:
       WORKDIR: "OVING2/terraform"
-      BACKEND_HCL: "OVING2/shared/backend.hcl"
+      BACKEND_HCL: "../shared/backend.hcl"
       TF_INPUT: "false"
       TF_IN_AUTOMATION: "true"
       ENVIRONMENT: "test"
@@ -155,7 +155,7 @@ jobs:
     environment: prod
     env:
       WORKDIR: "OVING2/terraform"
-      BACKEND_HCL: "OVING2/shared/backend.hcl"
+      BACKEND_HCL: "../shared/backend.hcl"
       TF_INPUT: "false"
       TF_IN_AUTOMATION: "true"
       ENVIRONMENT: "prod"
