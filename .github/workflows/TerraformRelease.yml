@@ -10,20 +10,35 @@ permissions:
 
 jobs:
   release:
+    name: Build & Publish Terraform Release
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build Terraform Artifact
+      - name: Set up version info
+        id: vars
         run: |
           VERSION=${GITHUB_REF_NAME}
-          tar -czf terraform-${VERSION}.tar.gz OVING2/
-          echo "Built artifact for version $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build Terraform Artifact
+        run: |
+          VERSION=${{ steps.vars.outputs.version }}
+          mkdir -p dist
+          tar -czf dist/terraform-${VERSION}.tar.gz OVING2/
+          echo "✅ Built artifact for version $VERSION"
+
+      - name: Verify artifact exists (debug)
+        run: ls -lh dist/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: terraform-${GITHUB_REF_NAME}.tar.gz
+          name: "Terraform Release ${{ steps.vars.outputs.version }}"
+          tag_name: ${{ steps.vars.outputs.version }}
+          generate_release_notes: true
+          files: dist/terraform-${{ steps.vars.outputs.version }}.tar.gz
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_PAT }} # Using pat instead of GITHUB_TOKEN because of: https://github.com/orgs/community/discussions/25281
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PAT }} # PAT required to trigger CD workflows: https://github.com/orgs/community/discussions/25281
