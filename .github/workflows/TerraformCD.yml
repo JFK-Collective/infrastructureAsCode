@@ -1,9 +1,9 @@
 name: Terraform CD (Deploy Many)
 
 on:
-  workflow_dispatch:
   release:
     types: [published]
+  workflow_dispatch:
 
 permissions:
   id-token: write
