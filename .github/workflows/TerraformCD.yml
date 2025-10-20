@@ -17,13 +17,11 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev
     env:
-      WORKDIR: "OVING2"
+      WORKDIR: "OVING2/terraform"
       BACKEND_HCL: "OVING2/shared/backend.hcl"
       TF_INPUT: "false"
       TF_IN_AUTOMATION: "true"
       ENVIRONMENT: "dev"
-      LOCATION: "westeurope"
-      PROJECT_NAME: "OBLIG2"
       KEYVAULT_NAME: "kv-tfstate-jfk"
 
     steps:
@@ -52,40 +50,35 @@ jobs:
             echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}"
           } >> "$GITHUB_ENV"
 
-      # 👇 Fetch tfvars from Key Vault
-      - name: Fetch tfvars from Azure Key Vault
-        uses: azure/CLI@v1
-        with:
-          inlineScript: |
-            echo "Fetching tfvars for DEV environment"
-            az keyvault secret show \
-              --vault-name ${{ env.KEYVAULT_NAME }} \
-              --name "dev-tfvars-oblig2" \
-              --query value -o tsv > ${{ env.WORKDIR }}/terraform/dev.tfvars
-            echo "✅ Saved dev.tfvars from Key Vault"
+      # ✅ Fetch Base64-encoded tfvars and decode
+      - name: Fetch tfvars from Azure Key Vault (Base64 decode)
+        run: |
+          echo "Fetching Base64 tfvars for DEV..."
+          mkdir -p "${{ env.WORKDIR }}"
+          SECRET_B64=$(az keyvault secret show \
+            --vault-name ${{ env.KEYVAULT_NAME }} \
+            --name "dev-tfvars-oblig2" \
+            --query value -o tsv)
+          echo "$SECRET_B64" | base64 -d > "${{ env.WORKDIR }}/dev.tfvars"
+          echo "✅ Decoded and saved dev.tfvars"
 
       - name: Terraform Init
-        working-directory: ${{ env.WORKDIR }}/terraform
+        working-directory: ${{ env.WORKDIR }}
         run: |
           terraform init \
-            -backend-config="${{ github.workspace }}/${{ env.BACKEND_HCL }}" \
-            -backend-config="key=projects/storageaccount/${{ env.ENVIRONMENT }}/${{ env.ENVIRONMENT }}.tfstate" \
-            -input=false \
-            -no-color
+            -backend-config="${{ env.BACKEND_HCL }}" \
+            -backend-config="key=projects/storageaccount/dev/dev.tfstate" \
+            -input=false -no-color
 
       - name: Terraform Apply
-        working-directory: ${{ env.WORKDIR }}/terraform
-        run: |
-          terraform apply -auto-approve \
-            -var-file="dev.tfvars" \
-            -no-color
+        working-directory: ${{ env.WORKDIR }}
+        run: terraform apply -auto-approve -var-file="dev.tfvars" -no-color
 
       - name: Terraform Output
-        working-directory: ${{ env.WORKDIR }}/terraform
+        working-directory: ${{ env.WORKDIR }}
         run: |
           echo "### Terraform Outputs for DEV" >> $GITHUB_STEP_SUMMARY
           terraform output -no-color | tee -a $GITHUB_STEP_SUMMARY
-
 
   deploy-test:
     name: Deploy to TEST
@@ -93,13 +86,11 @@ jobs:
     needs: deploy-dev
     environment: test
     env:
-      WORKDIR: "OVING2"
+      WORKDIR: "OVING2/terraform"
       BACKEND_HCL: "OVING2/shared/backend.hcl"
       TF_INPUT: "false"
       TF_IN_AUTOMATION: "true"
       ENVIRONMENT: "test"
-      LOCATION: "westeurope"
-      PROJECT_NAME: "OBLIG2"
       KEYVAULT_NAME: "kv-tfstate-jfk"
 
     steps:
@@ -128,39 +119,34 @@ jobs:
             echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}"
           } >> "$GITHUB_ENV"
 
-      - name: Fetch tfvars from Azure Key Vault
-        uses: azure/CLI@v1
-        with:
-          inlineScript: |
-            echo "Fetching tfvars for TEST environment"
-            az keyvault secret show \
-              --vault-name ${{ env.KEYVAULT_NAME }} \
-              --name "test-tfvars-oblig2" \
-              --query value -o tsv > ${{ env.WORKDIR }}/terraform/test.tfvars
-            echo "✅ Saved test.tfvars from Key Vault"
+      - name: Fetch tfvars from Azure Key Vault (Base64 decode)
+        run: |
+          echo "Fetching Base64 tfvars for TEST..."
+          mkdir -p "${{ env.WORKDIR }}"
+          SECRET_B64=$(az keyvault secret show \
+            --vault-name ${{ env.KEYVAULT_NAME }} \
+            --name "test-tfvars-oblig2" \
+            --query value -o tsv)
+          echo "$SECRET_B64" | base64 -d > "${{ env.WORKDIR }}/test.tfvars"
+          echo "✅ Decoded and saved test.tfvars"
 
       - name: Terraform Init
-        working-directory: ${{ env.WORKDIR }}/terraform
+        working-directory: ${{ env.WORKDIR }}
         run: |
           terraform init \
-            -backend-config="${{ github.workspace }}/${{ env.BACKEND_HCL }}" \
-            -backend-config="key=projects/storageaccount/${{ env.ENVIRONMENT }}/${{ env.ENVIRONMENT }}.tfstate" \
-            -input=false \
-            -no-color
+            -backend-config="${{ env.BACKEND_HCL }}" \
+            -backend-config="key=projects/storageaccount/test/test.tfstate" \
+            -input=false -no-color
 
       - name: Terraform Apply
-        working-directory: ${{ env.WORKDIR }}/terraform
-        run: |
-          terraform apply -auto-approve \
-            -var-file="test.tfvars" \
-            -no-color
+        working-directory: ${{ env.WORKDIR }}
+        run: terraform apply -auto-approve -var-file="test.tfvars" -no-color
 
       - name: Terraform Output
-        working-directory: ${{ env.WORKDIR }}/terraform
+        working-directory: ${{ env.WORKDIR }}
         run: |
           echo "### Terraform Outputs for TEST" >> $GITHUB_STEP_SUMMARY
           terraform output -no-color | tee -a $GITHUB_STEP_SUMMARY
-
 
   deploy-prod:
     name: Deploy to PROD
@@ -168,13 +154,11 @@ jobs:
     needs: deploy-test
     environment: prod
     env:
-      WORKDIR: "OVING2"
+      WORKDIR: "OVING2/terraform"
       BACKEND_HCL: "OVING2/shared/backend.hcl"
       TF_INPUT: "false"
       TF_IN_AUTOMATION: "true"
       ENVIRONMENT: "prod"
-      LOCATION: "norwayeast"
-      PROJECT_NAME: "OBLIG2"
       KEYVAULT_NAME: "kv-tfstate-jfk"
 
     steps:
@@ -203,35 +187,31 @@ jobs:
             echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}"
           } >> "$GITHUB_ENV"
 
-      - name: Fetch tfvars from Azure Key Vault
-        uses: azure/CLI@v1
-        with:
-          inlineScript: |
-            echo "Fetching tfvars for PROD environment"
-            az keyvault secret show \
-              --vault-name ${{ env.KEYVAULT_NAME }} \
-              --name "prod-tfvars-oblig2" \
-              --query value -o tsv > ${{ env.WORKDIR }}/terraform/prod.tfvars
-            echo "✅ Saved prod.tfvars from Key Vault"
+      - name: Fetch tfvars from Azure Key Vault (Base64 decode)
+        run: |
+          echo "Fetching Base64 tfvars for PROD..."
+          mkdir -p "${{ env.WORKDIR }}"
+          SECRET_B64=$(az keyvault secret show \
+            --vault-name ${{ env.KEYVAULT_NAME }} \
+            --name "prod-tfvars-oblig2" \
+            --query value -o tsv)
+          echo "$SECRET_B64" | base64 -d > "${{ env.WORKDIR }}/prod.tfvars"
+          echo "✅ Decoded and saved prod.tfvars"
 
       - name: Terraform Init
-        working-directory: ${{ env.WORKDIR }}/terraform
+        working-directory: ${{ env.WORKDIR }}
         run: |
           terraform init \
-            -backend-config="${{ github.workspace }}/${{ env.BACKEND_HCL }}" \
-            -backend-config="key=projects/storageaccount/${{ env.ENVIRONMENT }}/${{ env.ENVIRONMENT }}.tfstate" \
-            -input=false \
-            -no-color
+            -backend-config="${{ env.BACKEND_HCL }}" \
+            -backend-config="key=projects/storageaccount/prod/prod.tfstate" \
+            -input=false -no-color
 
       - name: Terraform Apply
-        working-directory: ${{ env.WORKDIR }}/terraform
-        run: |
-          terraform apply -auto-approve \
-            -var-file="prod.tfvars" \
-            -no-color
+        working-directory: ${{ env.WORKDIR }}
+        run: terraform apply -auto-approve -var-file="prod.tfvars" -no-color
 
       - name: Terraform Output
-        working-directory: ${{ env.WORKDIR }}/terraform
+        working-directory: ${{ env.WORKDIR }}
         run: |
           echo "### Terraform Outputs for PROD" >> $GITHUB_STEP_SUMMARY
           terraform output -no-color | tee -a $GITHUB_STEP_SUMMARY
@@ -239,10 +219,7 @@ jobs:
       - name: Deployment Summary
         run: |
           echo "## 🎉 Deployment Complete!" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "All environments have been successfully deployed:" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ DEV" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ TEST" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ PROD" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Same Terraform code deployed to all environments!**" >> $GITHUB_STEP_SUMMARY

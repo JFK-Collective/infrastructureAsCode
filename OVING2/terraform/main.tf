@@ -29,6 +29,7 @@ resource "azurerm_storage_account" "main" {
   }
 }
 
+# comment more comment
 # Storage Container
 resource "azurerm_storage_container" "oblig" {
   name                  = "oblig-data"
