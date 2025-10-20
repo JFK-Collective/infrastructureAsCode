@@ -1,11 +1,9 @@
-name: Terraform CD
+name: Terraform CD (Deploy Many)
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "OVING2/**"
+  workflow_dispatch:
+  release:
+    types: [published]
 
 permissions:
   id-token: write
@@ -25,8 +23,16 @@ jobs:
       KEYVAULT_NAME: "kv-tfstate-jfk"
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Download Terraform Artifact from Release
+        uses: robinraju/release-downloader@v1.11
+        with:
+          repository: ${{ github.repository }}
+          latest: true
+          fileName: "terraform-*.tar.gz"
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Terraform Artifact
+        run: tar -xzf terraform-*.tar.gz
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -94,8 +100,16 @@ jobs:
       KEYVAULT_NAME: "kv-tfstate-jfk"
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Download Terraform Artifact from Release
+        uses: robinraju/release-downloader@v1.11
+        with:
+          repository: ${{ github.repository }}
+          latest: true
+          fileName: "terraform-*.tar.gz"
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Terraform Artifact
+        run: tar -xzf terraform-*.tar.gz
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -162,8 +176,16 @@ jobs:
       KEYVAULT_NAME: "kv-tfstate-jfk"
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Download Terraform Artifact from Release
+        uses: robinraju/release-downloader@v1.11
+        with:
+          repository: ${{ github.repository }}
+          latest: true
+          fileName: "terraform-*.tar.gz"
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Terraform Artifact
+        run: tar -xzf terraform-*.tar.gz
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3

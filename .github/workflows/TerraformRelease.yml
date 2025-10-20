@@ -1,0 +1,30 @@
+name: Terraform Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Terraform Artifact
+        run: |
+          VERSION=${GITHUB_REF_NAME}
+          tar -czf terraform-${VERSION}.tar.gz OVING2/
+          echo "Built artifact for version $VERSION"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: terraform-${GITHUB_REF_NAME}.tar.gz
+          name: "Terraform ${{ github.ref_name }}"
+          tag_name: ${{ github.ref_name }}
+          body: "Release for Terraform version ${{ github.ref_name }}"
