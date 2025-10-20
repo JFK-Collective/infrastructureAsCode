@@ -2,7 +2,7 @@ name: Terraform CI
 
 on:
   pull_request:
-    branches: 
+    branches:
       - main
     paths:
       - "OVING2/**"
@@ -17,11 +17,11 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev
     env:
-      WORKDIR: "OVING"
+      WORKDIR: "OVING/environments"
       BACKEND_HCL: "OVING2/shared/backend.hcl"
       TF_INPUT: "false"
       TF_IN_AUTOMATION: "true"
-      
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -49,13 +49,13 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Terraform Format Check
-        working-directory: ${{ env.WORKDIR }}/terraform
+        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
         id: fmt
         run: terraform fmt -check -recursive
         continue-on-error: true
 
       - name: Terraform Init
-        working-directory: ${{ env.WORKDIR }}/terraform
+        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
         id: init
         run: |
           terraform init \
@@ -63,9 +63,9 @@ jobs:
             -backend-config="key=projects/storageaccount/dev/dev.tfstate" \
             -input=false \
             -no-color
-      
+
       - name: Terraform Validate
-        working-directory: ${{ env.WORKDIR }}/terraform
+        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
         id: validate
         run: terraform validate -no-color
 
@@ -75,25 +75,25 @@ jobs:
     needs: validate
     environment: ${{ matrix.environment }}
     env:
-      WORKDIR: "OVING2"
+      WORKDIR: "OVING2/environments"
       BACKEND_HCL: "OVING2/shared/backend.hcl"
       TF_INPUT: "false"
       TF_IN_AUTOMATION: "true"
-    
+
     strategy:
       matrix:
         environment: [dev, test, prod]
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.13.3
           terraform_wrapper: false
-      
+
       - name: Azure login (OIDC)
         uses: azure/login@v2
         with:
@@ -109,16 +109,16 @@ jobs:
             echo "ARM_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}"
             echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}"
           } >> "$GITHUB_ENV"
-      
+
       - name: Terraform Init
-        working-directory: ${{ env.WORKDIR }}/terraform
+        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
         run: |
           terraform init \
             -backend-config="${{ github.workspace }}/${{ env.BACKEND_HCL }}" \
             -backend-config="key=projects/storageaccount/${{ matrix.environment }}/${{ matrix.environment }}.tfstate" \
             -input=false \
             -no-color
-      
+
       - name: Set Environment Variables
         run: |
           case "${{ matrix.environment }}" in
@@ -138,9 +138,9 @@ jobs:
               echo "PROJECT_NAME=demo" >> $GITHUB_ENV
               ;;
           esac
-      
+
       - name: Terraform Plan
-        working-directory: ${{ env.WORKDIR }}/terraform
+        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
         id: plan
         run: |
           # Kjør plan og fang både stdout og stderr
@@ -150,10 +150,10 @@ jobs:
             -var="location=${{ env.LOCATION }}" \
             -var="project_name=${{ env.PROJECT_NAME }}" \
             -out=${{ matrix.environment }}.tfplan 2>&1 | tee plan-output.txt
-          
+
           PLAN_EXIT_CODE=${PIPESTATUS[0]}
           set -e
-          
+
           # Lagre output og exit code
           {
             echo "PLAN_EXIT_CODE=${PLAN_EXIT_CODE}"
@@ -161,10 +161,10 @@ jobs:
             cat plan-output.txt
             echo 'EOF'
           } >> "$GITHUB_ENV"
-          
+
           exit ${PLAN_EXIT_CODE}
         continue-on-error: true
-      
+
       - name: Comment PR with Plan
         uses: actions/github-script@v7
         if: github.event_name == 'pull_request'
@@ -174,21 +174,21 @@ jobs:
             const planOutput = process.env.PLAN_OUTPUT || 'No plan output available';
             const exitCode = process.env.PLAN_EXIT_CODE || 'unknown';
             const status = (exitCode === '0' || exitCode === '2') ? '✅ Success' : '❌ Failed';
-            
+
             const output = `#### Terraform Plan for \`${{ matrix.environment }}\` 📋 ${status}
-            
+
             <details><summary>Show Plan</summary>
-            
+
             \`\`\`terraform
             ${planOutput}
             \`\`\`
-            
+
             </details>
-            
+
             **Exit Code:** ${exitCode}
-            
+
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Workflow: \`${{ github.workflow }}\`*`;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,

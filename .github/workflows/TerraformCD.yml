@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev
     env:
-      WORKDIR: "OVING2"
+      WORKDIR: "OVING2/environments"
       BACKEND_HCL: "OVING2/shared/backend.hcl"
       TF_INPUT: "false"
       TF_IN_AUTOMATION: "true"
@@ -52,7 +52,7 @@ jobs:
           } >> "$GITHUB_ENV"
       
       - name: Terraform Init
-        working-directory: ${{ env.WORKDIR }}/terraform
+        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
         run: |
           terraform init \
             -backend-config="${{ github.workspace }}/${{ env.BACKEND_HCL }}" \
@@ -61,7 +61,7 @@ jobs:
             -no-color
       
       - name: Terraform Apply
-        working-directory: ${{ env.WORKDIR }}/terraform
+        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
         run: |
           terraform apply -auto-approve \
             -var="environment=${{ env.ENVIRONMENT }}" \
@@ -70,7 +70,7 @@ jobs:
             -no-color
       
       - name: Terraform Output
-        working-directory: ${{ env.WORKDIR }}/terraform
+        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
         id: output
         run: |
           echo "### Terraform Outputs for DEV" >> $GITHUB_STEP_SUMMARY
@@ -82,7 +82,7 @@ jobs:
     needs: deploy-dev
     environment: test
     env:
-      WORKDIR: "OVING2"
+      WORKDIR: "OVING2/environments"
       BACKEND_HCL: "OVING2/shared/backend.hcl"
       TF_INPUT: "false"
       TF_IN_AUTOMATION: "true"
@@ -117,7 +117,7 @@ jobs:
           } >> "$GITHUB_ENV"
       
       - name: Terraform Init
-        working-directory: ${{ env.WORKDIR }}/terraform
+        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
         run: |
           terraform init \
             -backend-config="${{ github.workspace }}/${{ env.BACKEND_HCL }}" \
@@ -126,7 +126,7 @@ jobs:
             -no-color
       
       - name: Terraform Apply
-        working-directory: ${{ env.WORKDIR }}/terraform
+        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
         run: |
           terraform apply -auto-approve \
             -var="environment=${{ env.ENVIRONMENT }}" \
@@ -135,7 +135,7 @@ jobs:
             -no-color
       
       - name: Terraform Output
-        working-directory: ${{ env.WORKDIR }}/terraform
+        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
         id: output
         run: |
           echo "### Terraform Outputs for TEST" >> $GITHUB_STEP_SUMMARY
@@ -147,7 +147,7 @@ jobs:
     needs: deploy-test
     environment: prod
     env:
-      WORKDIR: "OVING2"
+      WORKDIR: "OVING2/environments"
       BACKEND_HCL: "OVING2/shared/backend.hcl"
       TF_INPUT: "false"
       TF_IN_AUTOMATION: "true"
@@ -182,7 +182,7 @@ jobs:
           } >> "$GITHUB_ENV"
       
       - name: Terraform Init
-        working-directory: ${{ env.WORKDIR }}/terraform
+        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
         run: |
           terraform init \
             -backend-config="${{ github.workspace }}/${{ env.BACKEND_HCL }}" \
@@ -191,7 +191,7 @@ jobs:
             -no-color
       
       - name: Terraform Apply
-        working-directory: ${{ env.WORKDIR }}/terraform
+        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
         run: |
           terraform apply -auto-approve \
             -var="environment=${{ env.ENVIRONMENT }}" \
@@ -200,7 +200,7 @@ jobs:
             -no-color
       
       - name: Terraform Output
-        working-directory: ${{ env.WORKDIR }}/terraform
+        working-directory: ${{ env.WORKDIR }}/${{ matrix.environment }}
         id: output
         run: |
           echo "### Terraform Outputs for PROD" >> $GITHUB_STEP_SUMMARY
