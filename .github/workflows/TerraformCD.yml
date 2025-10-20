@@ -152,8 +152,8 @@ jobs:
       TF_INPUT: "false"
       TF_IN_AUTOMATION: "true"
       ENVIRONMENT: "prod"
-      LOCATION: "norwayeast"
-      PROJECT_NAME: "demo"
+      LOCATION: "westeurope"
+      PROJECT_NAME: "OBLIG2"
     
     steps:
       - name: Checkout code
