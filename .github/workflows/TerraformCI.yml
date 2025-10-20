@@ -108,14 +108,14 @@ jobs:
 
       - name: Fetch tfvars from Azure Key Vault
         run: |
-          echo "Fetching tfvars for ${{ matrix.environment }}..."
-          mkdir -p ${{ env.WORKDIR }}
-          SECRET_VALUE=$(az keyvault secret show \
+          echo "Fetching tfvars for DEV..."
+          mkdir -p "${{ env.WORKDIR }}"
+          SECRET_B64=$(az keyvault secret show \
             --vault-name ${{ env.KEYVAULT_NAME }} \
-            --name "${{ matrix.environment }}-tfvars-oblig2" \
+            --name "dev-tfvars-oblig2" \
             --query value -o tsv)
-          echo "$SECRET_VALUE" > "${{ env.WORKDIR }}/${{ matrix.environment }}.tfvars"
-          echo "✅ Saved ${{ matrix.environment }}.tfvars"
+          echo "$SECRET_B64" | base64 -d > "${{ env.WORKDIR }}/dev.tfvars"
+          echo "✅ Decoded and saved dev.tfvars"
 
       - name: Terraform Init
         working-directory: ${{ env.WORKDIR }}

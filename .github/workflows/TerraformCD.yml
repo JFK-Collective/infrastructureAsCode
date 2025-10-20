@@ -50,17 +50,17 @@ jobs:
             echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}"
           } >> "$GITHUB_ENV"
 
-      # ✅ Fetch tfvars from Key Vault
-      - name: Fetch tfvars from Azure Key Vault
+      # ✅ Fetch Base64-encoded tfvars and decode
+      - name: Fetch tfvars from Azure Key Vault (Base64 decode)
         run: |
-          echo "Fetching tfvars for DEV..."
+          echo "Fetching Base64 tfvars for DEV..."
           mkdir -p "${{ env.WORKDIR }}"
-          SECRET_VALUE=$(az keyvault secret show \
+          SECRET_B64=$(az keyvault secret show \
             --vault-name ${{ env.KEYVAULT_NAME }} \
             --name "dev-tfvars-oblig2" \
             --query value -o tsv)
-          echo "$SECRET_VALUE" > "${{ env.WORKDIR }}/dev.tfvars"
-          echo "✅ Saved dev.tfvars from Key Vault"
+          echo "$SECRET_B64" | base64 -d > "${{ env.WORKDIR }}/dev.tfvars"
+          echo "✅ Decoded and saved dev.tfvars"
 
       - name: Terraform Init
         working-directory: ${{ env.WORKDIR }}
@@ -119,16 +119,16 @@ jobs:
             echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}"
           } >> "$GITHUB_ENV"
 
-      - name: Fetch tfvars from Azure Key Vault
+      - name: Fetch tfvars from Azure Key Vault (Base64 decode)
         run: |
-          echo "Fetching tfvars for TEST..."
+          echo "Fetching Base64 tfvars for TEST..."
           mkdir -p "${{ env.WORKDIR }}"
-          SECRET_VALUE=$(az keyvault secret show \
+          SECRET_B64=$(az keyvault secret show \
             --vault-name ${{ env.KEYVAULT_NAME }} \
             --name "test-tfvars-oblig2" \
             --query value -o tsv)
-          echo "$SECRET_VALUE" > "${{ env.WORKDIR }}/test.tfvars"
-          echo "✅ Saved test.tfvars from Key Vault"
+          echo "$SECRET_B64" | base64 -d > "${{ env.WORKDIR }}/test.tfvars"
+          echo "✅ Decoded and saved test.tfvars"
 
       - name: Terraform Init
         working-directory: ${{ env.WORKDIR }}
@@ -187,16 +187,16 @@ jobs:
             echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}"
           } >> "$GITHUB_ENV"
 
-      - name: Fetch tfvars from Azure Key Vault
+      - name: Fetch tfvars from Azure Key Vault (Base64 decode)
         run: |
-          echo "Fetching tfvars for PROD..."
+          echo "Fetching Base64 tfvars for PROD..."
           mkdir -p "${{ env.WORKDIR }}"
-          SECRET_VALUE=$(az keyvault secret show \
+          SECRET_B64=$(az keyvault secret show \
             --vault-name ${{ env.KEYVAULT_NAME }} \
             --name "prod-tfvars-oblig2" \
             --query value -o tsv)
-          echo "$SECRET_VALUE" > "${{ env.WORKDIR }}/prod.tfvars"
-          echo "✅ Saved prod.tfvars from Key Vault"
+          echo "$SECRET_B64" | base64 -d > "${{ env.WORKDIR }}/prod.tfvars"
+          echo "✅ Decoded and saved prod.tfvars"
 
       - name: Terraform Init
         working-directory: ${{ env.WORKDIR }}
