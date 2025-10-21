@@ -13,12 +13,12 @@ resource "azurerm_resource_group" "main" {
 
 # Storage Account
 resource "azurerm_storage_account" "main" {
-  name                = "st${var.project_name}${var.environment}${var.prefix}"
+  name                = "st${var.prefix}${var.project_name}${var.environment}"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
 
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
+  account_tier             = var.account_tier
+  account_replication_type = var.replication_type
 
   min_tls_version = "TLS1_2"
 
