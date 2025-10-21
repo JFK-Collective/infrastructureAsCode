@@ -1,19 +1,14 @@
 # Resource Group
 resource "azurerm_resource_group" "main" {
-  name     = "rg-${var.prefix}-${var.project_name}-${var.environment}"
+  name     = local.resource_group_name
   location = var.location
 
-  tags = {
-    Environment = var.environment
-    ManagedBy   = "jorgefk"
-    Project     = var.project_name
-    costcode    = "sjakalaka"
-  }
+  tags = local.common_tags
 }
 
 # Storage Account
 resource "azurerm_storage_account" "main" {
-  name                = "st${var.prefix}${var.project_name}${var.environment}"
+  name                = local.storage_account_name
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
 
@@ -22,11 +17,7 @@ resource "azurerm_storage_account" "main" {
 
   min_tls_version = "TLS1_2"
 
-  tags = {
-    Environment = var.environment
-    ManagedBy   = "jorgefk"
-    costcode    = "sjapalaka"
-  }
+  tags = local.common_tags
 }
 
 # comment more comment

@@ -13,7 +13,7 @@ Løsningen viser en komplett pipeline fra lokal utvikling til automatisk og vers
 ## Teknologi og oppsett
 
 - Terraform brukes for å definere infrastruktur (Resource Group og Storage Account).
-- Azure Key Vault lagrer tfvars-verdier Base64-kodet.
+- Azure Key Vault lagrer tfvars-verdier.
 - GitHub Actions brukes til CI/CD og versjonering.
 - OIDC brukes for sikker innlogging til Azure uten statiske secrets.
 - Trunk-based development brukes for samarbeid og raske integrasjoner.
@@ -24,11 +24,11 @@ Løsningen viser en komplett pipeline fra lokal utvikling til automatisk og vers
 
 Utvikling starter lokalt. Terraform-koden skrives på egen maskin.  
 Når endringene er klare, opprettes en feature branch, og koden pushes til GitHub.  
-Deretter opprettes en Pull Request (PR) mot main.
+Deretter opprettes en Pull Request mot main.
 
 ### 2. Continuous Integration (CI)
 
-Fil: `.github/workflows/terraform-ci.yml`
+Fil: `.github/workflows/TerraformCI.yml`
 
 Når en Pull Request opprettes mot main, starter CI-pipelinen automatisk.
 
@@ -42,23 +42,21 @@ Når alt er validert og godkjent, kan pull requesten merges til main.
 
 ### 3. Build Once – Release
 
-Fil: `.github/workflows/terraform-release.yml`
+Fil: `.github/workflows/TerraformRelease.yml`
 
 I stedet for å deploye direkte etter merge, deployeres infrastrukturen når en GitHub Release opprettes.  
 Dette gir tydelig versjonering og gjør infrastrukturen enkel å reprodusere og recertifisere.
 
 #### Prosess
 
-1. Opprett en ny versjon:
+1. Opprett en ny versjon slik:
 
 git tag -a v1.2.0 -m "New infrastructure release"
 git push origin v1.2.0
 
 2. Når taggen pushes, bygges et artifact automatisk med github workflow:
 
-terraform-v1.2.0.tar.gz
-
-3. Artifactet lastes opp som release asset i GitHub Releases.
+3. Artifactet lastes opp automatisk som release asset i GitHub Releases.
 
 Dette artifactet representerer den eksakte koden som brukes i alle miljøer.  
 Dermed bygges infrastrukturen én gang, og den samme koden brukes overalt.
@@ -85,7 +83,7 @@ Den laster ned artifactet og deployer det sekvensielt til dev, test og prod.
 3. Prod
 
 - Starter etter at test.
-- Henter `prod-tfvars` fra Key Vault.
+- Henter prod-tfvars fra Key Vault.
 - **Krever manuell godkjenning før den kjører**, via GitHub Environments.  
   En reviewer må godkjenne deployen i GitHub før produksjonsmiljøet oppdateres.
 - Etter godkjenning kjører workflowen `terraform init` og `terraform apply`  
