@@ -7,11 +7,11 @@ resource "azurerm_resource_group" "main" {
     Environment = var.environment
     ManagedBy   = "jorgefk"
     Project     = var.project_name
-    costcode    = "12345a213414dfg"
+    costcode    = "sjakalaka"
   }
 }
 
-# Storage Account ##¤
+# Storage Account
 resource "azurerm_storage_account" "main" {
   name                = "st${var.project_name}${var.environment}${var.prefix}"
   resource_group_name = azurerm_resource_group.main.name
@@ -24,8 +24,8 @@ resource "azurerm_storage_account" "main" {
 
   tags = {
     Environment = var.environment
-    ManagedBy   = "Terraform"
-    Test        = "TestValue"
+    ManagedBy   = "jorgefk"
+    costcode        = "sjapalaka"
   }
 }
 
