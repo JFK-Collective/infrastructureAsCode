@@ -23,7 +23,7 @@ variable "project_name" {
 variable "prefix" {
   description = "Prefix used to mark objects as mine"
   type        = string
-  default     = "jorgefk"
+  default     = "jfk"
 }
 
 variable "account_tier" {
