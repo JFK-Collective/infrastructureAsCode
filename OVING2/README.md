@@ -91,8 +91,7 @@ Den laster ned artifactet og deployer det sekvensielt til dev, test og prod.
 - Henter prod-tfvars fra Key Vault.
 - **Krever manuell godkjenning før den kjører**, via GitHub Environments.  
   En reviewer må godkjenne deployen i GitHub før produksjonsmiljøet oppdateres.
-- Etter godkjenning kjører workflowen `terraform init` og `terraform apply`  
-  med samme artifact som i dev og test.
+- Etter godkjenning kjører workflowen `terraform init` og `terraform apply` med samme artifact som i dev og test.
 
 ## Prinsipper i bruk
 
