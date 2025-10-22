@@ -65,6 +65,8 @@ Dermed bygges infrastrukturen én gang, og den samme koden brukes overalt.
 
 Dette gir oss også full kontroll på hvilken kode som er ute i produksjon, da man må ha laget en release for å deploye det.
 
+Kommentar til release kan legges til ved å redigere release'n i github etter opprettelse.
+
 ### 4. Continuous Deployment (CD)
 
 Fil: `.github/workflows/TerraformCD.yml`
