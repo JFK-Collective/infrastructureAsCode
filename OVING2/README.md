@@ -6,7 +6,7 @@ Løsningen viser en komplett pipeline fra lokal utvikling til automatisk og vers
 ## Mål
 
 - All infrastruktur skal være versjonert, sporbar og kunne recertifiseres på kort varsel.
-- Samme Terraform-kode skal brukes i alle miljøer (build once, deploy many).
+- Samme Terraform-kode skal brukes i alle miljøer.
 - Miljøene skal ha forskjellig konfigurasjon, men identisk struktur.
 - Teamet skal kunne jobbe parallelt uten merge-konflikter (trunk-based development).
 
@@ -15,8 +15,7 @@ Løsningen viser en komplett pipeline fra lokal utvikling til automatisk og vers
 - Terraform brukes for å definere infrastruktur (Resource Group og Storage Account).
 - Azure Key Vault lagrer tfvars-verdier.
 - GitHub Actions brukes til CI/CD og versjonering.
-- OIDC brukes for sikker innlogging til Azure uten statiske secrets.
-- Trunk-based development brukes for samarbeid og raske integrasjoner.
+- Trunk-based development skal brukes av teamet for samarbeid og raske integrasjoner.
 
 ## Arbeidsflyt
 
@@ -44,15 +43,18 @@ Når alt er validert og godkjent, kan pull requesten merges til main.
 
 Fil: `.github/workflows/TerraformRelease.yml`
 
-I stedet for å deploye direkte etter merge, deployeres infrastrukturen når en GitHub Release opprettes.  
+I stedet for å deploye direkte etter merge, deployes infrastrukturen når en GitHub Release opprettes.
+Releasen blir i vår infrastruktur opprettet av denne workflow filen.
 Dette gir tydelig versjonering og gjør infrastrukturen enkel å reprodusere og recertifisere.
 
-#### Prosess
+#### Hvordan trigge workflow og lage release
 
 1. Opprett en ny versjon slik:
 
-git tag -a v1.2.0 -m "New infrastructure release"
-git push origin v1.2.0
+Workflowen trigges av at vi oppretter en ny tag. Det gjøres disse kommandoene i main branchen:
+
+> git tag -a v1.2.0 -m "New infrastructure release"
+> git push origin v1.2.0
 
 2. Når taggen pushes, bygges et artifact automatisk med github workflow:
 
@@ -61,11 +63,14 @@ git push origin v1.2.0
 Dette artifactet representerer den eksakte koden som brukes i alle miljøer.  
 Dermed bygges infrastrukturen én gang, og den samme koden brukes overalt.
 
+Dette gir oss også full kontroll på hvilken kode som er ute i produksjon, da man må ha laget en release for å deploye det.
+
 ### 4. Continuous Deployment (CD)
 
 Fil: `.github/workflows/TerraformCD.yml`
 
-CD-workflowen starter automatisk når en ny release publiseres.  
+CD-workflowen starter automatisk når en ny release publiseres.
+Altså den kjøres av seg selv etter at man har laget en ny tag og release blir published.
 Den laster ned artifactet og deployer det sekvensielt til dev, test og prod.
 
 #### Steg
