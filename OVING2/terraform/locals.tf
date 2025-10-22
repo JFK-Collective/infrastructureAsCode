@@ -1,6 +1,6 @@
 locals {
   # Standardized resource names
-  resource_group_name = "rg-${var.prefix}-${var.project_name}-${var.environment}"
+  resource_group_name  = "rg-${var.prefix}-${var.project_name}-${var.environment}"
   storage_account_name = "st${var.prefix}${var.project_name}${var.environment}"
 
   # Common tags for all resources
